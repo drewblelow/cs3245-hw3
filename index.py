@@ -134,5 +134,16 @@ def writeout():
 		filename = basename(file)
 		write_dic.write(filename + " ")
 
+#method to view dictionary, debugging use only
+def view_dictionary():
+	for word in DICTIONARY:
+		print word,
+		postings = DICTIONARY[word]
+		for post in postings:
+			print post,
+		print "\n"
+		
 #lines below run the methods defined above	
 indexer()
+
+#view_dictionary()
