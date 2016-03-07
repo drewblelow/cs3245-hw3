@@ -21,6 +21,10 @@ postings_file = "postings.txt"
 
 #variables
 DICTIONARY = {}
+INDEX_OPTION = 0
+#OPTIONS: 	0 = inverted index
+#			1 = doc_freq
+
 
 #specified settings
 try:
@@ -53,14 +57,18 @@ def indexer():
 	print(directory_path),
 	print("..."),
 	#calls indexing method for files in the for loop
-	for current_file in files_to_index:
-		index_file(current_file)
+	if INDEX_OPTION = 0:
+		for current_file in files_to_index:
+			index_file_inverted(current_file)
+	elif INDEX_OPTION = 1:
+		for current_file in files_to_index:
+			index_file_frequency(current_file)
 	#calls write methods to dictionary.txt and postings.txt
 	writeout()
 	print "[DONE]"
 	
-#indexer method to add all words from a file to the dictionary and postings
-def index_file(file):
+#indexer method to add all words from a file to the dictionary and postings (inverted index)
+def index_file_inverted(file):
 	filename = basename(file)
 	filepath = directory_path + os.path.sep + filename
 	filetxt = open(filepath).read()
@@ -74,6 +82,21 @@ def index_file(file):
 				postings.append(filename)
 		else:
 			DICTIONARY[word] = [filename]
+	
+#indexes documents with frequency included
+def index_file_frequency(file):	
+	filename = basename(file)
+	filepath = directory_path + os.path.sep + filename
+	filetxt = open(filepath).read()
+	#words are split by regex, entered into dict
+	words = re.findall(r"[a-zA-Z]+(?:'[a-z])?", filetxt)
+	#to lower case, eliminate casing duplicates in dic
+	words = [element.lower() for element in words]
+	for word in words:
+		if word in DICTIONARY:
+			
+	
+	
 	
 #method to write to external files
 def writeout():
@@ -90,5 +113,6 @@ def writeout():
 	for file in files_to_index:
 		filename = basename(file)
 		write_dic.write(filename + " ")
+
 #lines below run the methods defined above	
 indexer()
