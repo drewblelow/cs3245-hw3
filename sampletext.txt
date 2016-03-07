@@ -1,1 +1,1 @@
-This file is to test regex splitting as well as dictionary storage for duplicate words such as "this file is to test".
+This file is to test regex splitting as well as dictionary storage for duplicate words such as "this file is to test". How about words like it's and 123456789 phone numbers?

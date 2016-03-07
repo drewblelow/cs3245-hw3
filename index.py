@@ -21,7 +21,7 @@ postings_file = "postings.txt"
 
 #variables
 DICTIONARY = {}
-INDEX_OPTION = 0
+INDEX_OPTION = 1
 #OPTIONS: 	0 = inverted index
 #			1 = doc_freq
 
@@ -92,11 +92,31 @@ def index_file_frequency(file):
 	words = re.findall(r"[a-zA-Z]+(?:'[a-z])?", filetxt)
 	#to lower case, eliminate casing duplicates in dic
 	words = [element.lower() for element in words]
-	for word in words:
+	wordlist = frequency_processor(words)
+	for entry in wordlist:
+		word = entry[0]
+		freq = entry[1]
+		post = [filename, freq]
 		if word in DICTIONARY:
-			
+			postings = DICTIONARY[word]
+			postings.append(post)
+		else :
+			postings = []
+			postings.append(post)
+			DICTIONARY[word] = postings
 	
-	
+#word frequency preprocessor
+def frequency_processor(wordlist):
+	encountered = {}
+	end_list = []
+	for word in wordlist:
+		if word not in encountered:
+			encountered[word] = 1
+			freq = wordlist.count(word)
+			item = [word, freq]
+			end_list.append(item)
+		#skip if already encountered
+	return end_list	
 	
 #method to write to external files
 def writeout():
