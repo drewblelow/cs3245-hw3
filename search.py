@@ -31,6 +31,10 @@ OPERATORS = {
     "NOT" : (10, RIGHT_ASSOC)
 }
 LIST_DOC = []
+SEARCH_OPTIONS = 1
+#SEARCH TYPES:
+#	0 = boolean only
+#	1 = boolean + frequency
 
 #specified settings
 try:
@@ -77,11 +81,16 @@ def read_queries():
 	print("reading and searching queries..."),
 	query_lines = open(query_file).readlines()
 	out_write = open(output_file, 'w')
-	for query in query_lines:	
-		print("once")
-		line = parse(query)
-		result = evaluate(line)
-		out_write.write(result + "\n")
+	if OPTIONS == 0:
+		for query in query_lines:	
+			line = parse(query)
+			result = evaluate_bool(line)
+			out_write.write(result + "\n")
+	elif OPTIONS == 1:
+		for query in query_lines:
+			line = parse(query)
+			#TODO: 	EVALUATE_FREQ
+			#		WRITE RESULT
 	print("[DONE]")
 	
 #parses the query 	
@@ -109,14 +118,12 @@ def parse(input):
 	output = toRPN(copy)
 	return output
 
-#evaluates the parsed query
-def evaluate(input):
+#evaluates the parsed query (boolean search only)
+def evaluate_bool(input):
 	read_dic = open(dictionary_file, "r")
 	seek_pos = open(postings_file, "r")
 	end_set = []
 	temp_set = []
-	print(input)
-	print(len(input))
 	if len(input) == 0:
 		print("invalid query: empty")
 		sys.exit(2)
@@ -157,6 +164,45 @@ def evaluate(input):
 			temp_set = line.split()
 			end_set.append(temp_set)
 			seek_pos.seek(0,0)
+		else:
+			temp_set = []
+			end_set.append(temp_set)
+	unique(end_set[0])
+	write_string = set_to_string(end_set[0])
+	return write_string
+	
+#evaluates the parsed query (with frequency index)
+def evaluate_freq(input):
+	read_dic = open(dictionary_file, "r")
+	seek_pos = open(postings_file, "r")
+	end_set = []
+	temp_set = []
+	if len(input) == 0:
+		print("invalid query: empty")
+		sys.exit(2)
+	word = input.pop(0)
+	if word in DICTIONARY:
+		pointer = DICTIONARY[word]
+		seek_pos.seek(int(pointer))
+		#TODO: change the format of evaluation to incldue doc freq
+		temp_set = seek_pos.readline()
+		end_set.append(temp_set)
+		seek_pos.seek(0,0)
+	while len(input) != 0:
+		current = input.pop(0)
+		if isOperator(current):
+			if current == "AND":
+				print "TODO: set merging with frequency, relevance evaluation"
+			elif current == "OR":
+				print "TODO: set merging with relevance evaluation"
+			elif current == "NOT":
+				print "TODO: set negation"
+		elif current in DICTIONARY:
+			pointer = DICTIONARY[current]
+			seek_pos.seek(int(pointer))
+			temp_set = seek_pos.readline()
+			end_set.append(temp_set)
+			seek_pos(0,0)
 		else:
 			temp_set = []
 			end_set.append(temp_set)
