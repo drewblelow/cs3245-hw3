@@ -22,19 +22,7 @@ output_file = "out.txt"
 
 #variables
 DICTIONARY = {}
-LEFT_ASSOC = 0
-RIGHT_ASSOC = 1
-#representation of boolean operators
-OPERATORS = { 
-	"OR" : (0, LEFT_ASSOC),
-    "AND" : (5, LEFT_ASSOC),
-    "NOT" : (10, RIGHT_ASSOC)
-}
-LIST_DOC = []
-SEARCH_OPTIONS = 1
-#SEARCH TYPES:
-#	0 = boolean only
-#	1 = boolean + frequency
+LIST_DOC = {}
 
 #specified settings
 try:
@@ -70,206 +58,31 @@ def load_dic():
 		word = item[0]
 		index = item[1]
 		DICTIONARY[word] = index
-	all_files = dic_file.readline()
-	a = all_files.split()
-	for x in a:
-		LIST_DOC.append(x)
+	list_docs = dic_file.readline()
+	for entry in list_docs:
+		item = entry.split('_')
+		filename = item[0]
+		numwords = item[1]
+		LIST_DOC[filename] = numwords
 	print("[DONE]")
 
-#wrapper method reads all queries in the file
-def read_queries():
-	print("reading and searching queries..."),
-	query_lines = open(query_file).readlines()
-	out_write = open(output_file, 'w')
-	if OPTIONS == 0:
-		for query in query_lines:	
-			line = parse(query)
-			result = evaluate_bool(line)
-			out_write.write(result + "\n")
-	elif OPTIONS == 1:
-		for query in query_lines:
-			line = parse(query)
-			#TODO: 	EVALUATE_FREQ
-			#		WRITE RESULT
-	print("[DONE]")
-	
-#parses the query 	
-def parse(input):
-	tokenised = input.split()
-	temp =[]
-	for token in tokenised:
-		if "(" in token:
-			word = token.strip('(')
-			temp.append('(')
-			temp.append(word)
-		elif ")" in token:
-			word = token.strip(')')
-			temp.append(word)
-			temp.append(')')
-		else:
-			temp.append(token)
-	copy = []
-	for token in temp:
-		if token != "AND" and token != "OR" and token != "NOT":
-			current = str.lower(token)
-		else:
-			current = token
-		copy.append(current)
-	output = toRPN(copy)
-	return output
+#read and evaluate all queries from file
+def read_queries(file):
+	out_writer = open("outtxt", 'w')
+	with open(file) as fp:
+		for line in fp:
+			evaluate(line)
+	close(file)
 
-#evaluates the parsed query (boolean search only)
-def evaluate_bool(input):
-	read_dic = open(dictionary_file, "r")
-	seek_pos = open(postings_file, "r")
-	end_set = []
-	temp_set = []
-	if len(input) == 0:
-		print("invalid query: empty")
-		sys.exit(2)
-	word = input.pop(0)
-	if word in DICTIONARY:
-		pointer = DICTIONARY[word]
-		print(word),
-		print("pointer"),
-		print(pointer)
-		seek_pos.seek(int(pointer))
-		line = seek_pos.readline()
-		print(line)
-		temp_set = line.split()
-		end_set.append(temp_set)
-		seek_pos.seek(0,0)
-	while len(input) != 0:
-		print(len(input))
-		current = input.pop(0)
-		if isOperator(current):
-			if current == "AND":
-				temp = intersect(end_set[-1], end_set[-2])
-				temp_set = temp
-			if current == "OR":
-				temp = union(end_set[-1], end_set[-2])
-				temp_set = temp
-			if current == "NOT":
-				temp = negation(end_set[-1])
-				temp_set = temp
-				end_set.append(temp_set)
-		elif current in DICTIONARY:
-			pointer = DICTIONARY[current]
-			print(current),
-			print("pointer"),
-			print(pointer)
-			seek_pos.seek(int(pointer))
-			line = seek_pos.readline()
-			print(line)
-			temp_set = line.split()
-			end_set.append(temp_set)
-			seek_pos.seek(0,0)
-		else:
-			temp_set = []
-			end_set.append(temp_set)
-	unique(end_set[0])
-	write_string = set_to_string(end_set[0])
-	return write_string
-	
-#evaluates the parsed query (with frequency index)
-def evaluate_freq(input):
-	read_dic = open(dictionary_file, "r")
-	seek_pos = open(postings_file, "r")
-	end_set = []
-	temp_set = []
-	if len(input) == 0:
-		print("invalid query: empty")
-		sys.exit(2)
-	word = input.pop(0)
-	if word in DICTIONARY:
-		pointer = DICTIONARY[word]
-		seek_pos.seek(int(pointer))
-		#TODO: change the format of evaluation to incldue doc freq
-		temp_set = seek_pos.readline()
-		end_set.append(temp_set)
-		seek_pos.seek(0,0)
-	while len(input) != 0:
-		current = input.pop(0)
-		if isOperator(current):
-			if current == "AND":
-				print "TODO: set merging with frequency, relevance evaluation"
-			elif current == "OR":
-				print "TODO: set merging with relevance evaluation"
-			elif current == "NOT":
-				print "TODO: set negation"
-		elif current in DICTIONARY:
-			pointer = DICTIONARY[current]
-			seek_pos.seek(int(pointer))
-			temp_set = seek_pos.readline()
-			end_set.append(temp_set)
-			seek_pos(0,0)
-		else:
-			temp_set = []
-			end_set.append(temp_set)
-	unique(end_set[0])
-	write_string = set_to_string(end_set[0])
-	return write_string
-	
-#strips duplicates if present
-def unique(a):
-	return list(set(a))
-	
-#BOOLEAN AND	
-def intersect(a, b):
-	return list(set(a) & set(b))
-	
-#BOOLEAN OR
-def union(a, b):
-	return list(set(a) | set(b))
-
-#BOOLEAN NOT (with complete LIST_DOC)
-def negation(a):
-	b = [e for e in LIST_DOC if e not in a]
-	return b
-	
-#method converts a set into the format specified by submission requirements
-def set_to_string(set):
-	string = " ".join(str(item) for item in set)
-	return string
-	
-#changes the format of query, infix to rpn
-def toRPN(query):
-	output = []
-	stack = []
-	for token in query:
-		if isOperator(token):
-			while len(stack) != 0 and isOperator(stack[-1]):
-				if (isAssoc(token, LEFT_ASSOC) and precedence(token, stack[-1]) <= 0) or (isAssoc(token, RIGHT_ASSOC) and precedence(token, stack[-1]) < 0):
-					output.append(stack.pop())
-					continue
-				break
-			stack.append(token)
-		elif token == '(':
-			stack.append(token)
-		elif token == ')':
-			while len(stack) != 0 and stack[-1] != '(':
-				output.append(stack.pop())
-			stack.pop()
-		else:
-			output.append(token)
-	while len(stack) != 0:
-		output.append(stack.pop())
-	print(output)
-	return output
+#evaluate one query
+def evaluate(query):
+	words = query.split()
+	result = []
+	for word in words:
+		seek_pointer = DICTIONARY[word]
 		
-#shunting yard helpers
-#check if token is operator
-def isOperator(token):
-	return token in OPERATORS.keys()
-
-#check associativity of operator
-def isAssoc(token, assoc):
-    return OPERATORS[token][1] == assoc
-
-#compare precedence of operators
-def precedence(token1, token2):
-    return OPERATORS[token1][0] - OPERATORS[token2][0]
+		print("todo score word")
+	return result
 	
-#run the methods declared above
+#lines below run the methods defined above
 load_dic()
-read_queries()

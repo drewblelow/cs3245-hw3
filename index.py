@@ -22,6 +22,7 @@ postings_file = "postings.txt"
 
 #variables
 DICTIONARY = {}
+LIST_DOC = []
 
 #specified settings
 try:
@@ -74,7 +75,9 @@ def index_file(file):
 	#to lower case, eliminate casing duplicates in dic
 	words = [element.lower() for element in words]
 	wordlist = frequency_processor(words)
+	count = 0
 	for entry in wordlist:
+		count++
 		word = entry[0]
 		freq = entry[1]
 		post = [filename, freq]
@@ -85,7 +88,8 @@ def index_file(file):
 			postings = []
 			postings.append(post)
 			DICTIONARY[word] = postings
-	
+	LIST_DOC.append([file, count])			
+			
 #word frequency preprocessor
 def frequency_processor(wordlist):
 	encountered = {}
@@ -112,9 +116,10 @@ def writeout():
 		write_dic.write(word + "^" + str(pointer) + " "),
 		write_pos.write('\n')
 	write_dic.write("\n")
-	for file in files_to_index:
-		filename = basename(file)
-		write_dic.write(filename + " ")
+	for item in LIST_DOC:
+		filename = LIST_DOC[0]
+		numwords = LIST_DOC[1]
+		write_dic.write(filename + "_" + numwords)
 
 #method to view dictionary, debugging use only
 def view_dictionary():
