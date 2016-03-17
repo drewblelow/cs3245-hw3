@@ -9,6 +9,7 @@ from collections import Counter
 from os.path import basename
 from os import listdir
 from os.path import isfile, join
+from nltk.stem.porter import PorterStemmer
 
 #use message
 def usage():
@@ -21,10 +22,6 @@ postings_file = "postings.txt"
 
 #variables
 DICTIONARY = {}
-INDEX_OPTION = 1
-#OPTIONS: 	0 = inverted index
-#			1 = doc_freq
-
 
 #specified settings
 try:
@@ -57,34 +54,18 @@ def indexer():
 	print(directory_path),
 	print("..."),
 	#calls indexing method for files in the for loop
-	if INDEX_OPTION = 0:
+	if INDEX_OPTION == 0:
 		for current_file in files_to_index:
 			index_file_inverted(current_file)
-	elif INDEX_OPTION = 1:
+	elif INDEX_OPTION == 1:
 		for current_file in files_to_index:
-			index_file_frequency(current_file)
+			index_file(current_file)
 	#calls write methods to dictionary.txt and postings.txt
 	writeout()
 	print "[DONE]"
 	
-#indexer method to add all words from a file to the dictionary and postings (inverted index)
-def index_file_inverted(file):
-	filename = basename(file)
-	filepath = directory_path + os.path.sep + filename
-	filetxt = open(filepath).read()
-	#words are split by regex (by spaces and punctuation), then entered into the dict
-	words = re.findall(r"[a-zA-Z]+(?:'[a-z])?", filetxt)
-	words = [element.lower() for element in words]
-	for word in words:
-		if word in DICTIONARY:
-			postings = DICTIONARY[word]
-			if filename not in postings:
-				postings.append(filename)
-		else:
-			DICTIONARY[word] = [filename]
-	
 #indexes documents with frequency included
-def index_file_frequency(file):	
+def index_file(file):	
 	filename = basename(file)
 	filepath = directory_path + os.path.sep + filename
 	filetxt = open(filepath).read()
@@ -110,10 +91,11 @@ def frequency_processor(wordlist):
 	encountered = {}
 	end_list = []
 	for word in wordlist:
-		if word not in encountered:
-			encountered[word] = 1
-			freq = wordlist.count(word)
-			item = [word, freq]
+		stemmed = stem(token)
+		if stemmed not in encountered:
+			encountered[stemmed] = 1
+			freq = wordlist.count(stemmed)
+			item = [stemmed, freq]
 			end_list.append(item)
 		#skip if already encountered
 	return end_list	
