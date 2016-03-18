@@ -76,11 +76,16 @@ def read_queries(file):
 
 #evaluate one query
 def evaluate(query):
+	doc_score = {}
+	seek_pos = open("postings.txt", 'r')
+	seek_pos.seek(0,0)
 	words = query.split()
 	result = []
 	for word in words:
 		seek_pointer = DICTIONARY[word]
-		
+		seek_pos.seek(int(pointer))
+		line = seek_pos.readline()
+		seek_pos,seek(0,0)
 		print("todo score word")
 	return result
 	

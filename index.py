@@ -70,36 +70,26 @@ def index_file(file):
 	words = re.findall(r"[a-zA-Z]+(?:'[a-z])?", filetxt)
 	#to lower case, eliminate casing duplicates in dic
 	words = [element.lower() for element in words]
-	wordlist = frequency_processor(words)
-	count = 0
-	for entry in wordlist:
-		count = count + 1
-		word = entry[0]
-		freq = entry[1]
-		post = [filename, freq]
-		if word in DICTIONARY:
+	wordlist = {}
+	stemmer = PorterStemmer()
+	for word in words:
+		stemmed = stemmer.stem(word)
+		if word not in wordlist:
+			wordlist[word] = 1
+		else:
+			freq = wordlist[word]
+			freq = freq + 1
+			wordlist[word] = freq
+	for word in wordlist:
+		frequency = wordlist[word]
+		posting = [filename, frequency]
+		if word not in DICTIONARY:
+			DICTIONARY[word] = posting
+		else:
 			postings = DICTIONARY[word]
-			postings.append(post)
-		else :
-			postings = []
-			postings.append(post)
+			postings.append(posting)
 			DICTIONARY[word] = postings
 	LIST_DOC.append([filename, count])			
-			
-#word frequency preprocessor
-def frequency_processor(wordlist):
-	encountered = {}
-	end_list = []
-	stemmer = PorterStemmer()
-	for word in wordlist:
-		stemmed = stemmer.stem(word)
-		if stemmed not in encountered:
-			encountered[stemmed] = 1
-			freq = wordlist.count(stemmed)
-			item = [stemmed, freq]
-			end_list.append(item)
-		#skip if already encountered
-	return end_list	
 	
 #method to write to external files
 def writeout():
