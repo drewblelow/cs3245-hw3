@@ -95,7 +95,6 @@ def evaluate(query):
 	stemmer = PorterStemmer()
 	words = [element.lower() for element in words]
 	for item in words:
-		print(item),
 		word = stemmer.stem(item)
 		if word not in word_score:	
 			if word in DICTIONARY:
@@ -111,25 +110,25 @@ def evaluate(query):
 				word_score[word] = []
 		#else duplicate, skip word
 	result = score_query(word_score)
-	print("\n")
 	return result
 
 #method scores the documents by word frequency
 def score_documents(list_postings):
 	global NUM_DOCS
+	global LIST_DOC
+	print(len(list_postings))
 	score_list = []
 	doc_frequency = len(list_postings) * 1.0
 	idf_score = float(math.log((NUM_DOCS/doc_frequency), 10))
 	for post in list_postings:
 		item = post.split("_")
 		doc_id = item[0]
+		doc_wordcount = float(LIST_DOC[doc_id])
 		term_frequency = int(item[1]) * 1.0
-		tf_score = (1 + math.log(term_frequency, 10))
+		tf_score = (1 + math.log((term_frequency/doc_wordcount), 10))
 		tf_idf = tf_score*idf_score
 		score_item = [doc_id, tf_idf]
 		score_list.append(score_item)
-	print(score_list)
-	print("\n")
 	return score_list
 
 #method scores the documents by query
@@ -137,7 +136,6 @@ def score_query(score_sheet):
 	doc_scores = {}
 	for entry in score_sheet:
 		list = score_sheet[entry]
-		print(entry)
 		if len(list) > 0:
 			for tuple in list:
 				doc_id = tuple[0]
@@ -148,7 +146,6 @@ def score_query(score_sheet):
 					current_score = doc_scores[doc_id]
 					new_score = current_score + score
 					doc_scores[doc_id] = new_score
-					print(new_score)
 		#skip if no score
 	list_total_score = []
 	for item in doc_scores:
@@ -159,28 +156,26 @@ def score_query(score_sheet):
 	#sort by doc score
 	list_total_score.sort(key=itemgetter(1), reverse=True)
 	output = score_to_string(list_total_score)
-	print(list_total_score)
-	print(output)
 	return output
 		
 #score to string method
 def score_to_string(list):
 	if len(list) <= 10:
-		first = list[0]
-		output = first[0]
-		last_index = len(list) - 1
-		for x in range(1, last_index):
+		new_list = []
+		for x in range(0, len(list)):
 			item = list[x]
-			output = output + " " + str(item[0])
-			print(output)
+			doc = str(item[0])
+			new_list.append(doc)
+		output = " ".join(new_list)
 		return output
 	else:
 		top10 = list[:10]
-		first = top10[0]
-		output = first[0]
-		for x in range(1,9):
+		new_list = []
+		for x in range(0,10):
 			item = top10[x]
-			output = output + " " + str(item[0])
+			doc = str(item[0])
+			new_list.append(doc)
+		output = " ".join(new_list)
 		return output
 		
 #lines below run the methods defined above
