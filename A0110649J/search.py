@@ -168,10 +168,8 @@ def score_to_string(list):
 		for x in range(0, len(list)):
 			item = list[x]
 			doc = str(item[0])
-			print(item[1])
 			new_list.append(doc)
 		output = " ".join(new_list)
-		print("\n")
 		return output
 	else:
 		top10 = list[:10]
@@ -179,10 +177,8 @@ def score_to_string(list):
 		for x in range(0,10):
 			item = top10[x]
 			doc = str(item[0])
-			print(item[1])
 			new_list.append(doc)
 		output = " ".join(new_list)
-		print("\n")
 		return output
 		
 #lines below run the methods defined above

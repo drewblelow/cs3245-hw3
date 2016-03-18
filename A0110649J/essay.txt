@@ -1,0 +1,42 @@
+1. In this assignment, we didn't ask you to support phrasal queries, which is a feature that is typically
+supported in web search engines. Describe how you would support phrasal search in conjunction with the
+VSM model. A sketch of the algorithm is sufficient. (For those of you who like a challenge, please go ahead
+and implement this feature in your submission but clearly demarcate it in your code and allow this feature
+to be turned on or off using the command line switch "-x" (where "-x" means to turn on the extended
+processing of phrasal queries). We will give a small bonus to submissions that achieve this functionality
+correctly).
+
+To implement phrasal queries without overloading the postings or dictionary files with unnecessary ngrams, we
+can perform proximity search. This involves searching for related words to a targeted word within a small,
+fixed sized window of words (e.g search term "information retrieval", search for "information" near "retrieval" 
+in documents). Such search has high precision but low recall, as the proximity search may miss words that are 
+slightly too far away. To improve recall, the search engine could either increase the proximity (increase search
+time) or relax the contraints of the presence of terms (lower precision).
+
+
+2. Describe how your search engine reacts to long documents and long queries as compared to short
+documents and queries. Is the normalization you use sufficient to address the problems (see Section 6.4.4
+for a hint)? In your judgement, is the ltc.lnc scheme (n.b., not the ranking scheme you were asked to
+implement) sufficient for retrieving documents from the Reuters-21578 collection?
+
+Assuming the searcher's queries contain informative words(infrequent in collection), the current implementation
+of idf should be able to handle long queries. This is because the score of the connective words would be damped
+by the collection of documents. However, the term frequency may be affected as long documents may only contain
+a couple of instances of the informative word, but a large number of connectors.
+Another problem faced by long queries is the bag of words problem posed in the lecture notes. Long queries' 
+vector representation may produce opposite results of what was intended. Hence, both normalisation techniques 
+may not be sufficient for such a problem, but enabling phrasal queries may solve the problem.
+
+
+3. Do you think zone or field parametric indices would be useful for practical search in the Reuters collection?
+Note: the Reuters collection does have metadata for each article but the quality of the metadata is not
+uniform, nor are the metadata classifications uniformly applied (some documents have it, some don't). Hint:
+for the next Homework #4, we will be using field metadata, so if you want to base Homework #4 on your
+Homework #3, you're welcomed to start support of this early (although no extra credit will be given if it's
+right).
+
+For this corpora, maybe not so much, since the metadata is lacking. For other collections, metadata could be
+very useful as a factor to check for precision as we can obtain information such as the author, title, date 
+published, and etc. Such data is useful for classification by humans, as we can guess at the content of the 
+document just by looking at the metadata. As such, it should be possible to produce an algorithm to score 
+the documents by metadata.
