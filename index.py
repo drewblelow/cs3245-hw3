@@ -55,12 +55,8 @@ def indexer():
 	print(directory_path),
 	print("..."),
 	#calls indexing method for files in the for loop
-	if INDEX_OPTION == 0:
-		for current_file in files_to_index:
-			index_file_inverted(current_file)
-	elif INDEX_OPTION == 1:
-		for current_file in files_to_index:
-			index_file(current_file)
+	for current_file in files_to_index:
+		index_file(current_file)
 	#calls write methods to dictionary.txt and postings.txt
 	writeout()
 	print "[DONE]"
@@ -77,7 +73,7 @@ def index_file(file):
 	wordlist = frequency_processor(words)
 	count = 0
 	for entry in wordlist:
-		count++
+		count = count + 1
 		word = entry[0]
 		freq = entry[1]
 		post = [filename, freq]
@@ -88,14 +84,15 @@ def index_file(file):
 			postings = []
 			postings.append(post)
 			DICTIONARY[word] = postings
-	LIST_DOC.append([file, count])			
+	LIST_DOC.append([filename, count])			
 			
 #word frequency preprocessor
 def frequency_processor(wordlist):
 	encountered = {}
 	end_list = []
+	stemmer = PorterStemmer()
 	for word in wordlist:
-		stemmed = stem(token)
+		stemmed = stemmer.stem(word)
 		if stemmed not in encountered:
 			encountered[stemmed] = 1
 			freq = wordlist.count(stemmed)
@@ -112,14 +109,16 @@ def writeout():
 		postings = DICTIONARY[word]
 		pointer = write_pos.tell()
 		for item in postings:
-			write_pos.write(item + " ")
+			doc_id = item[0]
+			freq = item[1]
+			write_pos.write(doc_id + "_" + str(freq) + " ")
 		write_dic.write(word + "^" + str(pointer) + " "),
 		write_pos.write('\n')
 	write_dic.write("\n")
 	for item in LIST_DOC:
-		filename = LIST_DOC[0]
-		numwords = LIST_DOC[1]
-		write_dic.write(filename + "_" + numwords)
+		filename = item[0]
+		numwords = item[1]
+		write_dic.write(filename + "_" + str(numwords) + " ")
 
 #method to view dictionary, debugging use only
 def view_dictionary():
@@ -132,5 +131,3 @@ def view_dictionary():
 		
 #lines below run the methods defined above	
 indexer()
-
-#view_dictionary()
