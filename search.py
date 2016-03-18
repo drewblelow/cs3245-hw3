@@ -23,6 +23,7 @@ output_file = "out.txt"
 #variables
 DICTIONARY = {}
 LIST_DOC = {}
+NUM_DOCS = 0
 
 #specified settings
 try:
@@ -58,12 +59,14 @@ def load_dic():
 		word = item[0]
 		index = item[1]
 		DICTIONARY[word] = index
-	list_docs = dic_file.readline()
+	docs_line = dic_file.readline()
+	list_docs = docs_line.split()
 	for entry in list_docs:
 		item = entry.split('_')
 		filename = item[0]
 		numwords = item[1]
 		LIST_DOC[filename] = numwords
+	NUM_DOCS = LIST_DOC.len
 	print("[DONE]")
 
 #read and evaluate all queries from file
@@ -76,18 +79,37 @@ def read_queries(file):
 
 #evaluate one query
 def evaluate(query):
-	doc_score = {}
+	word_score = {}
 	seek_pos = open("postings.txt", 'r')
 	seek_pos.seek(0,0)
 	words = query.split()
 	result = []
 	for word in words:
-		seek_pointer = DICTIONARY[word]
-		seek_pos.seek(int(pointer))
-		line = seek_pos.readline()
-		seek_pos,seek(0,0)
-		print("todo score word")
+		if word not in word_score:	
+			if word in DICTIONARY:
+				seek_pointer = DICTIONARY[word]
+				seek_pos.seek(int(pointer))
+				line = seek_pos.readline()
+				seek_pos,seek(0,0)
+				post_list = line.split()
+				score = score_documents(post_list)
+				word_score[word] = score
+			else:
+				#not encountered, score of 0
+				word_score[word] = 0
+		#else duplicate, skip word
 	return result
+
+#method scores the documents	
+def score_documents(list_postings):
+	doc_frequency = list_postings.len
+	idf = math.log(doc_frequency, 10)
+	for post in list_postings:
+		item = post.split("_")
+		doc_id = item[0]
+		term_frequency = item[1]
+		
 	
 #lines below run the methods defined above
 load_dic()
+read_queries()
