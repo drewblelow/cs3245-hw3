@@ -72,19 +72,23 @@ def index_file(file):
 	words = [element.lower() for element in words]
 	wordlist = {}
 	stemmer = PorterStemmer()
+	count = 0
 	for word in words:
+		count = count + 1
 		stemmed = stemmer.stem(word)
-		if word not in wordlist:
-			wordlist[word] = 1
+		if stemmed not in wordlist:
+			wordlist[stemmed] = 1
 		else:
-			freq = wordlist[word]
+			freq = wordlist[stemmed]
 			freq = freq + 1
-			wordlist[word] = freq
+			wordlist[stemmed] = freq
 	for word in wordlist:
 		frequency = wordlist[word]
 		posting = [filename, frequency]
 		if word not in DICTIONARY:
-			DICTIONARY[word] = posting
+			newitem = []
+			newitem.append(posting)
+			DICTIONARY[word] = newitem
 		else:
 			postings = DICTIONARY[word]
 			postings.append(posting)
